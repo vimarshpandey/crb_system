@@ -2,6 +2,7 @@
 require_once('db_connect.php');
 session_start();
 
+
 if(isset($_POST['update_admin_email']))
 {
     
@@ -60,7 +61,7 @@ else
         }
         else
         {
-            echo '<script>alert("No user Found."); </script>';
+            echo '<script>alert("No User Found."); </script>';
         }
     }
 }
@@ -188,7 +189,7 @@ if (isset($_POST["search-btn"]))
                             <button type="button" class="btn btn-danger" onclick="confirmLogout()">Logout</button>
                             <details>
                                 <summary type="button" class="btn btn-warning mt-3">Delegate Mail Id</summary><br><br><ul class="h6"><li>Only change the mail Id when admin changes or admin is on leave.</li><br><li>Approval for the booking will be send to entered mail Id.</li></ul><br>
-                                <form class="w-50" method="post" action="">
+                                <form id="delegateForm" class="w-50" method="post" action="">
                                     <label for="receiver_email" class="h6 font-weight-bold">Receiver's Mail Id:</label>
                                     <div class="form-group">
                                         <input type="email" class="form-control" value="<?php echo $_SESSION['admin_email'] ?>" id="receiver_email" name="receiver_email" required>
@@ -197,6 +198,24 @@ if (isset($_POST["search-btn"]))
                                 </form><br>
                             </details>
                             <script>
+                                document.getElementById('delegateForm').addEventListener('submit', function(event)
+                                {
+                                    var emailInput = document.getElementById('receiver_email');
+                                    var email = emailInput.value.trim();
+
+                                    // Validate the email address
+                                    var organization1 = 'outlook.com';
+                                    var organization2 = 'gmail.com';
+                                    var regex1 = new RegExp('^\\S+@' + organization1.replace('.', '\\.') + '$', 'i');
+                                    var regex2 = new RegExp('^\\S+@' + organization2.replace('.', '\\.') + '$', 'i');
+                                    if (!regex1.test(email) && !regex2.test(email))
+                                    {
+                                        alert('Only email addresses from ' + organization1 + ' or ' + organization2 + ' are allowed.');
+                                        event.preventDefault();
+                                        return;
+                                    }
+                                });
+
                                 function confirmLogout()
                                 {
                                     Swal.fire({

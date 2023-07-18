@@ -267,7 +267,7 @@
             
             Swal.fire({
                 title: 'Add Branch',
-                text: 'Are you sure you want to add this branch?',
+                text: 'Are you sure you want to add this branch? # Please before filling/using this form update the source code. # It is recommended that before adding any branch take the approval from the higher authorities. # Submitting this form is a very risky process so please ensure that all the above required things are done before submitting.',
                 icon: 'question',
                 showCancelButton: true,
                 confirmButtonText: 'Add',
@@ -288,7 +288,7 @@
 
             Swal.fire({
                 title: 'Delete Branch',
-                text: 'Are you sure you want to delete this branch?',
+                text: 'Are you sure you want to delete this branch? # Please before filling/using this form update the source code. # It is recommended that before deleting any branch take the approval from the higher authorities. # Submitting this form is a very risky process so please ensure that all the above required things are done before submitting.',
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonText: 'Delete',

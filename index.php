@@ -475,6 +475,35 @@ elseif (isset($_SESSION['error_message']))
       }
 
     });
+
+    // Set the timeout duration in milliseconds
+    var timeoutDuration = 55000; // 55 seconds
+
+    // Initialize the timeout variable
+    var timeout;
+
+    // Start the timeout function
+    function startTimeout() {
+      // Clear the previous timeout, if any
+      clearTimeout(timeout);
+
+      // Set the new timeout
+      timeout = setTimeout(refreshPage, timeoutDuration);
+    }
+
+    // Function to refresh the page
+    function refreshPage() {
+      location.reload();
+    }
+
+    // Attach event listeners to restart the timeout on user activity
+    document.addEventListener("mousemove", startTimeout);
+    document.addEventListener("mousedown", startTimeout);
+    document.addEventListener("keypress", startTimeout);
+    document.addEventListener("touchmove", startTimeout);
+
+    // Start the initial timeout
+    startTimeout();
   </script>
 </body>
 
