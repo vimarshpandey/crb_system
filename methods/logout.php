@@ -1,6 +1,7 @@
 <?php
+    ob_start();
     session_start();
-    $message = $_SESSION['message'];
+    $message = isset($_SESSION['message']) ? $_SESSION['message'] : 'Successfully logout!';
     $_SESSION = array();
     session_unset();
     session_destroy();

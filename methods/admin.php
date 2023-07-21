@@ -22,13 +22,12 @@ if(isset($_POST['update_admin_email']))
 
 if (isset($_SESSION['username']))
 {
-    
     $query = "SELECT ct.conference_id, bd.branch_name, ct.approved, ct.conference_date, ct.conference_start_time, ct.conference_end_time, ct.conference_duration, rd.room_name, dd.department_name, ct.entered_by, ct.conference_purpose, ct.entered_date, ct.comment
                 FROM conference_table AS ct
                 INNER JOIN room_details AS rd ON rd.room_id = ct.room_name
                 INNER JOIN department_details AS dd ON dd.department_id = ct.department_name
                 INNER JOIN branch_details AS bd ON bd.branch_id = ct.branch_name
-                WHERE DATE(ct.conference_date) > CURDATE() OR (DATE(ct.conference_date) = CURDATE() AND TIME(ct.conference_end_time) > CURTIME())";
+                WHERE DATE(ct.conference_date) > '$cur_date' OR (DATE(ct.conference_date) = '$cur_date' AND TIME(ct.conference_end_time) > '$cur_time')";
     
     $result = mysqli_query($con, $query);
     $numRows = mysqli_num_rows($result);
@@ -74,7 +73,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["approve"]) && isset($_
     header('Location: admin.php');
 }
 
-if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["decline"]) && isset($_POST["conference_id"]) && isset($_POST["comment"]))
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["conference_id"]) && isset($_POST["comment"]) && !isset($_POST["approve"]))
 {
     $conference_id = htmlspecialchars($_POST["conference_id"]);
     $comment = htmlspecialchars($_POST["comment"]);
@@ -138,7 +137,7 @@ if (isset($_POST["search-btn"]))
                     INNER JOIN room_details AS rd ON rd.room_id = ct.room_name
                     INNER JOIN department_details AS dd ON dd.department_id = ct.department_name
                     INNER JOIN branch_details AS bd ON bd.branch_id = ct.branch_name
-                    WHERE (DATE(ct.conference_date) > CURDATE() OR (DATE(ct.conference_date) = CURDATE() AND TIME(ct.conference_end_time) > CURTIME()))
+                    WHERE (DATE(ct.conference_date) > '$cur_date' OR (DATE(ct.conference_date) = '$cur_date' AND TIME(ct.conference_end_time) > '$cur_time'))
                     $searchQuery
                     ORDER BY ct.conference_id DESC LIMIT 0,1000";
 
@@ -345,14 +344,14 @@ if (isset($_POST["search-btn"]))
                                     <td><?php echo $row['entered_by']; ?></td>
                                     <td><?php echo $row['conference_purpose']; ?></td>
                                     <td><?php echo $row['entered_date']; ?></td>
-                                    <form method="POST" action="<?php echo $_SERVER["PHP_SELF"]; ?>">
+                                    <form method="POST" action="<?php echo $_SERVER["PHP_SELF"]; ?>" id="changeStatus_<?php echo $row['conference_id']; ?>">
                                         <td>
                                             <input type="hidden" name="conference_id" value="<?php echo $row['conference_id']; ?>">
                                             <button type="submit" name="approve" class="btn btn-success btn-sm w-100" <?php echo $row['approved'] == 1 ? 'disabled' : '' ?>>Approve</button>
-                                            <button type="submit" name="decline" class="btn btn-danger btn-sm w-100 mt-2" <?php echo $row['approved'] == 2 ? 'disabled' : '' ?>>Decline</button>
+                                            <button type="button" name="decline" class="btn btn-danger btn-sm w-100 mt-2" id="wgst" onclick="wantDecline('<?php echo $row['conference_id']; ?>');" <?php echo $row['approved'] == 2 ? 'disabled' : '' ?>>Decline</button>
                                         </td>
                                         <td>
-                                            <input type="text" name="comment" placeholder="Reason" class="form-control" style="height:4rem" <?php echo $row['approved'] == 1 || $row['approved'] == 0 ? 'required' : 'disabled' ?>>
+                                            <input type="text" name="comment" id="comment_<?php echo $row['conference_id']; ?>" placeholder="Reason" class="form-control" style="height:4rem">
                                         </td>
                                     </form>
                                 </tr>
@@ -423,6 +422,19 @@ if (isset($_POST["search-btn"]))
         {
             $('#myAlert').addClass('d-none');
         });
+
+        function wantDecline(formname){
+            console.log(formname);
+            var comment_selector = "comment_" + formname;
+            var value = document.getElementById(comment_selector).value;
+            console.log(value);
+            if(!value){
+                alert('Please provide a valid reason for decline!');
+            } else {
+                var form_selector = "#changeStatus_" + formname;
+                $(form_selector).submit()
+            }
+        }
     </script>
 </body>
 </html>

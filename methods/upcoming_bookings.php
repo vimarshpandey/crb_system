@@ -58,7 +58,7 @@ if (isset($_POST['search-btn']))
               INNER JOIN room_details AS rd ON rd.room_id = ct.room_name
               INNER JOIN department_details AS dd ON dd.department_id = ct.department_name
               INNER JOIN branch_details AS bd ON bd.branch_id = ct.branch_name
-              WHERE (DATE(ct.conference_date) > CURDATE() OR (DATE(ct.conference_date) = CURDATE() AND TIME(ct.conference_end_time) > CURTIME()))
+              WHERE (DATE(ct.conference_date) > '$cur_date' OR (DATE(ct.conference_date) = '$cur_date' AND TIME(ct.conference_end_time) > '$cur_time'))
               $whereClause
               ORDER BY ct.conference_id DESC LIMIT 0,500";
     
@@ -74,7 +74,7 @@ else
                 INNER JOIN room_details AS rd ON rd.room_id = ct.room_name
                 INNER JOIN department_details AS dd ON dd.department_id = ct.department_name
                 INNER JOIN branch_details AS bd ON bd.branch_id = ct.branch_name
-                WHERE DATE(ct.conference_date) > CURDATE() OR (DATE(ct.conference_date) = CURDATE() AND TIME(ct.conference_end_time) > CURTIME())
+                WHERE DATE(ct.conference_date) > '$cur_date' OR (DATE(ct.conference_date) = '$cur_date' AND TIME(ct.conference_end_time) > '$cur_time')
                 ORDER BY ct.conference_id DESC LIMIT 0,1000";
     $result = mysqli_query($con, $query);
     $numRows = mysqli_num_rows($result);
@@ -96,7 +96,7 @@ else
 </head>
 <body class="bg-dark">
     <div class="container-fluid">
-        <h1 class="text-danger text-center pb-3 pt-3">Details of Past Bookings</h1>
+        <h1 class="text-danger text-center pb-3 pt-3">Details of Upcoming Bookings</h1>
         <button id="export-btn" class="btn btn-primary mb-3 float-right">Export to Excel</button>
         <div class="row mb-3">
             <form method="POST" action="">

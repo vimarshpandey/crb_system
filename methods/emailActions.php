@@ -12,7 +12,7 @@ if(isset($_GET['request']) && isset($_GET['action']))
             if($action == 'approve')
             {
                 //Db update for Approval
-                $update_query = "UPDATE conference_table SET approved = 1 WHERE conference_id = '{$conference_id}' and conference_end_time > CURTIME() ";
+                $update_query = "UPDATE conference_table SET approved = 1 WHERE conference_id = '{$conference_id}' and conference_end_time > '$cur_time' ";
                 mysqli_query($con, $update_query);
                 if(mysqli_affected_rows($con))
                 {
@@ -26,7 +26,7 @@ if(isset($_GET['request']) && isset($_GET['action']))
                 if($action == 'disapprove')
                 {
                     // Db update for disapproval
-                    $update_query = "SELECT conference_id from conference_table WHERE conference_id = '{$conference_id}' AND approved != 2 and conference_end_time > CURTIME() ";
+                    $update_query = "SELECT conference_id from conference_table WHERE conference_id = '{$conference_id}' AND approved != 2 and conference_end_time > '$cur_time' ";
                     $result = mysqli_query($con, $update_query);
                     
                     if(mysqli_num_rows($result) > 0)

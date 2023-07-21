@@ -1,6 +1,8 @@
 <?php
 session_start();
 
+require_once('methods/db_connect.php');
+
 if (isset($_SESSION['success_message']))
 {
     echo "<script>alert('" . $_SESSION['success_message'] . "')</script>";
@@ -75,26 +77,15 @@ elseif (isset($_SESSION['error_message']))
 
 
       <?php
-        $servername = "localhost";
-        $username = "root";
-        $password = "";
-        $dbname = "ckb_conference_room";
-
-        $conn = new mysqli($servername, $username, $password, $dbname);
-
-        if ($conn->connect_error)
-        {
-            die("Connection failed: " . $conn->connect_error);
-        }
 
         $sql = "SELECT room_id, room_name, availability, approval_required FROM room_details where availability=1 OR availability=2";
-        $result = $conn->query($sql);
+        $result = $con->query($sql);
 
         $sql1 = "SELECT branch_id, branch_name FROM branch_details";
-        $result1 = $conn->query($sql1);
+        $result1 = $con->query($sql1);
 
         $sql2 = "SELECT department_id, department_name, availability FROM department_details";
-        $result2 = $conn->query($sql2);
+        $result2 = $con->query($sql2);
 
         $options = "";
         if ($result->num_rows > 0)
@@ -154,9 +145,7 @@ elseif (isset($_SESSION['error_message']))
                 }
             }
         }
-
-        $conn->close();
-        ?>
+      ?>
 
 
 
@@ -225,6 +214,7 @@ elseif (isset($_SESSION['error_message']))
               <button type="submit" name="submit" value="submit" class="btn btn-primary">Proceed for Approval</button>
               <button type="button" onclick="window.location.reload()" class="btn btn-danger">Reset</button>
               <a href="methods/upcoming_bookings.php" type="button" class="btn btn-primary">Upcoming Bookings</a>
+              <a href="methods/admin.php" type="button" class="btn btn-primary mt-3">Login as Admin</a>
             </div>
           </div>
           
@@ -234,16 +224,9 @@ elseif (isset($_SESSION['error_message']))
               <div class="fw-bolder text-center h3 mt-5 pt-5">Approved Bookings:</div>
               <ul class="list-group" id="bookedRooms">
               <?php
-                $conn = new mysqli($servername, $username, $password, $dbname);
-
-                if ($conn->connect_error)
-                {
-                    die("Connection failed: " . $conn->connect_error);
-                }
-
                 $sql = "SELECT cr.room_name, ct.conference_start_time, ct.conference_end_time, ct.entered_by FROM conference_table AS ct 
-                INNER JOIN room_details cr ON ct.room_name = cr.room_id WHERE ct.approved = 1 AND ct.conference_date = CURDATE()";
-                $result = $conn->query($sql);
+                INNER JOIN room_details cr ON ct.room_name = cr.room_id WHERE ct.approved = 1 AND ct.conference_date = '$cur_date'";
+                $result = $con->query($sql);
 
                 if ($result->num_rows > 0)
                 {
@@ -258,10 +241,8 @@ elseif (isset($_SESSION['error_message']))
                 else
                 {
                     echo "<li class='list-group-item'>No rooms booked at the moment</li>";
-                }
-
-                $conn->close();
-              ?>
+                } 
+            ?>
               </ul>
             </div>
           </div>
@@ -270,16 +251,9 @@ elseif (isset($_SESSION['error_message']))
             <div class="fw-bolder text-center h3 mt-5">Pending for Approval:</div>
             <ul class="list-group" id="pendingRooms">
             <?php
-              $conn = new mysqli($servername, $username, $password, $dbname);
-
-              if ($conn->connect_error)
-              {
-                  die("Connection failed: " . $conn->connect_error);
-              }
-
               $sql = "SELECT cr.room_name, ct.conference_start_time, ct.conference_end_time, ct.entered_by FROM conference_table AS ct 
-              INNER JOIN room_details cr ON ct.room_name = cr.room_id WHERE ct.approved = 0 AND ct.conference_date = CURDATE() AND ct.conference_end_time > CURTIME()";
-              $result = $conn->query($sql);
+              INNER JOIN room_details cr ON ct.room_name = cr.room_id WHERE ct.approved = 0 AND ct.conference_date = '$cur_date' AND ct.conference_end_time > '$cur_time' ";
+              $result = $con->query($sql);
 
               if ($result->num_rows > 0)
               {
@@ -295,9 +269,7 @@ elseif (isset($_SESSION['error_message']))
               else
               {
                   echo "<li class='list-group-item'>No rooms in the pending list.</li>";
-              }
-
-              $conn->close();
+              }   
             ?>
             </ul>
           </div>
@@ -306,16 +278,10 @@ elseif (isset($_SESSION['error_message']))
             <div class="fw-bolder text-center h3 mt-5 pt-5">Declined Bookings:</div>
             <ul class="list-group" id="pendingRooms">
             <?php
-              $conn = new mysqli($servername, $username, $password, $dbname);
-
-              if ($conn->connect_error)
-              {
-                  die("Connection failed: " . $conn->connect_error);
-              }
 
               $sql = "SELECT cr.room_name, ct.conference_start_time, ct.conference_end_time, ct.entered_by, ct.comment FROM conference_table AS ct 
-              INNER JOIN room_details cr ON ct.room_name = cr.room_id WHERE ct.approved = 2 AND ct.conference_date = CURDATE()";
-              $result = $conn->query($sql);
+              INNER JOIN room_details cr ON ct.room_name = cr.room_id WHERE ct.approved = 2 AND ct.conference_date = '$cur_date'";
+              $result = $con->query($sql);
 
               if ($result->num_rows > 0)
               {
@@ -332,9 +298,7 @@ elseif (isset($_SESSION['error_message']))
               else
               {
                   echo "<li class='list-group-item'>No rooms in the pending list.</li>";
-              }
-
-              $conn->close();
+              }   
             ?>
             </ul>
             </div>
@@ -474,6 +438,8 @@ elseif (isset($_SESSION['error_message']))
         return formattedDuration;
       }
 
+      calculateDuration();
+
     });
 
     // Set the timeout duration in milliseconds
@@ -504,6 +470,7 @@ elseif (isset($_SESSION['error_message']))
 
     // Start the initial timeout
     startTimeout();
+
   </script>
 </body>
 

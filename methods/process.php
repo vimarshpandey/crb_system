@@ -1,4 +1,7 @@
 <?php
+ob_start();
+session_start();
+require_once('db_connect.php');
 // Retrieve the selected option from the dropdown
 $selectedOption = '';
 if (isset($_POST['options2']))
@@ -41,18 +44,9 @@ if (isset($_POST['submit']))
     $entered_by = htmlspecialchars($_POST['options4']);
     $conference_purpose = htmlspecialchars($_POST['options5']);
 
-    $host = 'localhost';
-    $user = 'root';
-    $pass = '';
-    $dbname = 'ckb_conference_room';
-
-    $conn = mysqli_connect($host, $user, $pass, $dbname);
-
     //$availabilityCheck = "SELECT * FROM conference_table WHERE room_name = '$room_name' AND conference_date = '$conference_date' AND conference_start_time <= '$conference_end_time' AND conference_end_time >= '$conference_start_time' AND approved = 1";
     $availabilityCheck = "SELECT * FROM conference_table WHERE room_name = '$room_name' AND conference_date = '$conference_date' AND conference_start_time <= '$conference_end_time' AND conference_end_time >= '$conference_start_time' AND (approved = 1 OR approved = 0)";
-    $availabilityResult = mysqli_query($conn, $availabilityCheck);
-
-    session_start();
+    $availabilityResult = mysqli_query($con, $availabilityCheck);
 
     if (mysqli_num_rows($availabilityResult) > 0)
     {
@@ -64,13 +58,13 @@ if (isset($_POST['submit']))
         // Room is available, proceed with inserting the data into the database
         $sql = "INSERT INTO conference_table(branch_name, conference_date, conference_start_time, conference_end_time, conference_duration, room_name, department_name, entered_by, conference_purpose) VALUES ('$branch_name', '$conference_date', '$conference_start_time', '$conference_end_time', '$conference_duration', '$room_name', '$department_name', '$entered_by', '$conference_purpose')";
 
-        if (mysqli_query($conn, $sql))
+        if (mysqli_query($con, $sql))
         {
-            $conference_id = mysqli_insert_id($conn); // Get the last inserted conference_id
+            $conference_id = mysqli_insert_id($con); // Get the last inserted conference_id
 
             // Check if approval is required for the selected room
             $approvalCheckQuery = "SELECT approval_required FROM room_details WHERE room_id = '$room_name'";
-            $approvalCheckResult = mysqli_query($conn, $approvalCheckQuery);
+            $approvalCheckResult = mysqli_query($con, $approvalCheckQuery);
 
             if ($approvalCheckResult && mysqli_num_rows($approvalCheckResult) > 0)
             {
@@ -81,7 +75,7 @@ if (isset($_POST['submit']))
                 {
                     // Update the approved column to 1
                     $updateQuery = "UPDATE conference_table SET approved = 1 WHERE conference_id = $conference_id";
-                    if (mysqli_query($conn, $updateQuery))
+                    if (mysqli_query($con, $updateQuery))
                     {
                         $_SESSION['success_message'] = "Booking Successful";
                     }
@@ -93,7 +87,7 @@ if (isset($_POST['submit']))
                 else if ($approval_required == 1)
                 {
                     $roomQuery = "SELECT room_name FROM room_details WHERE room_id = '$room_name'";
-                    $roomResult = mysqli_query($conn, $roomQuery);
+                    $roomResult = mysqli_query($con, $roomQuery);
                     if ($roomResult && mysqli_num_rows($roomResult) > 0)
                     {
                         $roomRow = mysqli_fetch_assoc($roomResult);
@@ -105,7 +99,7 @@ if (isset($_POST['submit']))
                     }
 
                     $departmentQuery = "SELECT department_name FROM department_details WHERE department_id = '$department_name'";
-                    $departmentResult = mysqli_query($conn, $departmentQuery);
+                    $departmentResult = mysqli_query($con, $departmentQuery);
                     if ($departmentResult && mysqli_num_rows($departmentResult) > 0)
                     {
                         $departmentRow = mysqli_fetch_assoc($departmentResult);
@@ -117,7 +111,7 @@ if (isset($_POST['submit']))
                     }
 
                     $branchQuery = "SELECT branch_name FROM branch_details WHERE branch_id = '$branch_name'";
-                    $branchResult = mysqli_query($conn, $branchQuery);
+                    $branchResult = mysqli_query($con, $branchQuery);
                     if ($branchResult && mysqli_num_rows($branchResult) > 0)
                     {
                         $branchRow = mysqli_fetch_assoc($branchResult);
@@ -147,7 +141,7 @@ if (isset($_POST['submit']))
 
                         $encode_cid = urlencode(base64_encode($conference_id));
                         $homeURL = (empty($_SERVER['HTTPS']) ? 'http' : 'https') . '://' . $_SERVER['HTTP_HOST'];
-                        $request_link = $homeURL . '/crb_system/methods/emailActions.php?request=' . $encode_cid . '&action';
+                        $request_link = $homeURL . '/methods/emailActions.php?request=' . $encode_cid . '&action';
                         $mail->Body .= "<p><b>Actions</b><br><a href='$request_link=approve'><button style='padding:12px;color:green'>Approve </button></a> &nbsp;&nbsp;";
                         $mail->Body .= "<a href='$request_link=disapprove'><button style='padding:12px;color:red'> Decline</button></a> <br></p>";
                         $mail->Body .= "Please review and approve the booking as soon as possible.</p><br><br><p><img src='https://doctornitingarg.com/wp-content/uploads/2021/10/logo-dark.png' width='200px'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src='https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSsdX30k66dNI6GlHWgTfp8AMHy5_qWBffaGrT6LiirDMBDhF1j4nplMNW6eLblBPhxNQ' width='180px'></p>";
